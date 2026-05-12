@@ -3,6 +3,8 @@ This is a collection of my security projects. Documenting my cybersecurity journ
 
 Here's an overview of the projects I will be doing and publishing.
 
+<img width="1000" height="504" alt="Top-6-Cybersecurity-Projects-Ideas-for-Beginners-Updated" src="https://github.com/user-attachments/assets/81a79cb7-0af8-4e14-b6d1-f02b1857c70e" />
+
 
 ---
 
