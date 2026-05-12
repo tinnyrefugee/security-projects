@@ -3,7 +3,7 @@ This is a collection of my security projects. Documenting my cybersecurity journ
 
 Here's an overview of the projects I will be doing and publishing.
 
-<img src="SECURITY-PROJECT/security-projects/Cyber-Security.jpg" alt="Cyber-Security.jpg" width="500">
+<img src="security-projects/Cyber-Security.jpg" alt="Cyber-Security.jpg" width="500">
 ---
 
 ## 📋 Project List Comparison & Final Recommendation
