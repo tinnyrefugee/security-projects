@@ -1,10 +1,8 @@
-Welcome back, Nocturnal! Great to hear the training is going well — and that CISO conversation sounds like exactly the kind of networking that opens doors. Let's build this portfolio right.
 
----
 
 ## 📋 Project List Comparison & Final Recommendation
 
-### Your List — Reviewed
+### Reviewed My List
 
 | # | Project | Verdict | Notes |
 |---|---------|---------|-------|
@@ -19,7 +17,7 @@ Welcome back, Nocturnal! Great to hear the training is going well — and that C
 | 9 | QR Code Phishing Detector | 🔀 Merge | Merge with Phishing Detector — adds depth to one project |
 | 10 | URL Shortener + Threat Scan | ✅ Keep | Actually a clever OSINT/threat intel project |
 
-### What I'd Add (Missing from Your List)
+### What I'd Add (Missing from my List)
 
 | # | Project | Why It Matters |
 |---|---------|----------------|
@@ -79,7 +77,7 @@ python3 port_scanner_tinny_refugee.py
 
 ---
 
-### The 4 Core Concepts You Can Explain to a CISO
+### The 4 Core Concepts You Can Explain to a CISO or your employer.
 
 **1. TCP Connect Scan**
 > *"We attempt a full three-way handshake — SYN, SYN-ACK, ACK — on each port. If it completes, the port is open. This is the most reliable but also the most detectable method since it appears in server logs."*
