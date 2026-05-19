@@ -3,16 +3,17 @@
 ```
 ████████╗██╗███╗   ██╗███╗   ██╗██╗   ██╗    ██████╗ ███████╗███████╗██╗   ██╗ ██████╗ ███████╗███████╗
 ╚══██╔══╝██║████╗  ██║████╗  ██║╚██╗ ██╔╝    ██╔══██╗██╔════╝██╔════╝██║   ██║██╔════╝ ██╔════╝██╔════╝
-   ██║   ██║██╔██╗ ██║██╔██╗ ██║ ╚████╔╝     ██████╔╝█████╗  █████╗  ██║   ██║██║  ███╗█████╗  █████╗  
-   ██║   ██║██║╚██╗██║██║╚██╗██║  ╚██╔╝      ██╔══██╗██╔══╝  ██╔══╝  ██║   ██║██║   ██║██╔══╝  ██╔══╝  
+   ██║   ██║██╔██╗ ██║██╔██╗ ██║ ╚████╔╝     ██████╔╝█████╗  █████╗  ██║   ██║██║  ███╗█████╗  █████╗
+   ██║   ██║██║╚██╗██║██║╚██╗██║  ╚██╔╝      ██╔══██╗██╔══╝  ██╔══╝  ██║   ██║██║   ██║██╔══╝  ██╔══╝
    ██║   ██║██║ ╚████║██║ ╚████║   ██║       ██║  ██║███████╗██║      ╚██████╔╝╚██████╔╝███████╗███████╗
    ╚═╝   ╚═╝╚═╝  ╚═══╝╚═╝  ╚═══╝   ╚═╝       ╚═╝  ╚═╝╚══════╝╚═╝       ╚═════╝  ╚═════╝ ╚══════╝╚══════╝
 ```
 
-# 🔍 Port Scanner with Banner Grabbing
+# 🔍 Port Scanner — Service & Version Detection
 ### `tinny_refugee` Security Projects — Beginner Series | Project #01
 
 ![Python](https://img.shields.io/badge/Python-3.8+-3776AB?style=for-the-badge&logo=python&logoColor=white)
+![Version](https://img.shields.io/badge/Version-3.0-blueviolet?style=for-the-badge)
 ![Platform](https://img.shields.io/badge/Platform-Linux%20%7C%20Windows%20%7C%20macOS-lightgrey?style=for-the-badge)
 ![Category](https://img.shields.io/badge/Category-Reconnaissance-DC143C?style=for-the-badge)
 ![Level](https://img.shields.io/badge/Level-Beginner-2ECC71?style=for-the-badge)
@@ -39,9 +40,10 @@
 - [Usage](#-usage)
 - [Sample Output](#-sample-output)
 - [How It Works — Under the Hood](#-how-it-works--under-the-hood)
+- [Version Detection Coverage](#-version-detection-coverage)
 - [Test Environment Setup](#-test-environment-setup)
 - [Risk Port Reference](#-risk-port-reference)
-- [Roadmap](#-roadmap)
+- [Changelog](#-changelog)
 - [Legal & Ethical Notice](#%EF%B8%8F-legal--ethical-notice)
 - [Contributing](#-contributing)
 - [Author](#-author)
@@ -50,11 +52,11 @@
 
 ## 📋 Description
 
-The **tinny_refugee Port Scanner** is a multi-threaded TCP port scanner and service fingerprinter built entirely in Python using only the standard library — no third-party dependencies required.
+The **tinny_refugee Port Scanner** is a multi-threaded TCP port scanner with **service and version detection** — the Python equivalent of running `nmap -sV` against a target. Built entirely on Python's standard library with zero external dependencies.
 
-It was built as **Project #01** of the `tinny_refugee` public cybersecurity portfolio, with a deliberate goal: to understand reconnaissance tools at the code level, not just as black-box utilities. Most people learn to *use* Nmap. This project teaches you to understand *what Nmap is actually doing* — and proves that understanding to any interviewer, CISO, or security team lead who asks.
+It was built as **Project #01** of the `tinny_refugee` public cybersecurity portfolio with one deliberate goal: to understand reconnaissance tools at the *code level*, not just as black-box utilities. Most people learn to *use* nmap. This project teaches you to understand what nmap is actually doing — and proves that understanding to any interviewer, CISO, or security team lead who asks.
 
-Port scanning is the **first phase of every professional penetration test**. Before any exploit is run, before any vulnerability is confirmed, a security professional needs a map of the target's attack surface — which ports are open, which services are listening, and what versions are exposed. This tool does exactly that.
+Port scanning and service fingerprinting is **Phase 1 of every professional penetration test**. Before any exploit is run, a security professional needs a complete map of the target's attack surface: which ports are open, what software is listening, what version is running, and which of those versions have known vulnerabilities. This tool produces exactly that map.
 
 Built by a self-taught security enthusiast, for the security community. Every line is commented. Every concept is explained. Fork it, break it, improve it.
 
@@ -62,19 +64,22 @@ Built by a self-taught security enthusiast, for the security community. Every li
 
 ## 🔧 What It Does
 
-At its core, this tool answers three questions about any target system:
+This tool answers four critical questions about any target system:
 
 ### 1. 🚪 Which doors are open?
-The scanner probes a configurable range of TCP ports (default: 1–1024, extendable to 65535) using full TCP connect scans. Each port that successfully completes a connection handshake is flagged as **OPEN**.
+Probes a configurable range of TCP ports (1–65535) using full TCP Connect scans. Every port that completes a connection handshake is flagged as **OPEN**.
 
-### 2. 🏷️ What's running behind each door?
-For every open port found, the scanner attempts **banner grabbing** — reading the identification string the service sends immediately after connection. This reveals the software name and version running on that port (e.g., `SSH-2.0-OpenSSH_8.4`, `220 vsFTPd 3.0.3`, `HTTP/1.1 200 OK`).
+### 2. 🏷️ What service is running?
+Maps every open port to a human-readable service name using an expanded 500+ port reference table plus an OS-level fallback (`/etc/services`). You will almost never see "Unknown Service" again.
 
-### 3. ⚠️ Which open ports are dangerous?
-The scanner cross-references every open port against a built-in **risk assessment table** of historically dangerous or commonly exploited services, flagging them with human-readable CVE context (e.g., *"Port 445: SMB — EternalBlue / WannaCry vector"*).
+### 3. 📌 What VERSION is running?
+Sends **protocol-specific probes** to each open port and parses the responses to extract the exact software product, version number, and extra context — exactly like `nmap -sV`. Probes implemented for 16+ protocol families including SSH, FTP, HTTP, MySQL, Redis, SMB, MongoDB, and more.
 
-### At the End — A Clean Report
-Every scan concludes with a structured **summary report** showing target info, scan duration, all open ports mapped to service names, their banners, and any risk flags raised.
+### 4. ⚠️ Which findings are dangerous?
+Cross-references all open ports against a risk table with CVE context, rating each finding as MEDIUM, HIGH, or CRITICAL.
+
+### At the End — a Structured Report
+Every scan produces a clean tabular report with columns for Port, Service, Product, Version, and Extra Info — the skeleton of a real recon report.
 
 ---
 
@@ -82,55 +87,57 @@ Every scan concludes with a structured **summary report** showing target info, s
 
 | Feature | Description |
 |--------|-------------|
-| 🔌 **TCP Connect Scan** | Full 3-way handshake scan — most reliable open port detection method |
-| 🏷️ **Banner Grabbing** | Reads service identification strings from every open port |
-| ⚡ **Multi-threaded Engine** | Configurable thread count (default: 100) for fast concurrent scanning |
-| 🌐 **Hostname Resolution** | Accepts both IP addresses and domain names as targets |
-| 🗺️ **Service Mapping** | Maps port numbers to human-readable service names from a built-in reference table |
-| ⚠️ **Risk Assessment** | Automatically flags high-risk ports (Telnet, SMB, RDP, Redis, MongoDB, etc.) with context |
-| 📊 **Structured Report** | Clean, readable summary report generated after every scan |
-| 🎯 **Configurable Range** | Scan any range of ports from 1 to 65535 |
-| 🛡️ **Zero Dependencies** | Built entirely on Python's standard library — nothing to install beyond Python itself |
-| 💻 **Cross-Platform** | Runs on Linux, macOS, and Windows |
-| 🖊️ **Fully Commented** | Every function and logic block documented for learning and study |
+| 🔌 **TCP Connect Scan** | Full 3-way handshake — most reliable open port detection |
+| 🔬 **Version Detection** | Protocol-specific probes extract product name + version (nmap -sV equivalent) |
+| 🏷️ **Service Mapping** | 500+ port reference table + OS `/etc/services` fallback |
+| ⚡ **Multi-threaded Engine** | Configurable thread pool for fast concurrent scanning |
+| 🌐 **Hostname Resolution** | Reverse DNS + NetBIOS name queries for Windows targets |
+| ⚠️ **Risk Assessment** | CRITICAL / HIGH / MEDIUM ratings with CVE context |
+| 📊 **Structured Report** | Tabular output: Port | Service | Product | Version | Extra |
+| 🎯 **Configurable Range** | Scan any port range from 1 to 65535 |
+| 🛡️ **Zero Dependencies** | Python standard library only — nothing to pip install |
+| 💻 **Cross-Platform** | Linux, macOS, Windows |
+| 🖊️ **Fully Commented** | Every function documented for learning and study |
 
 ---
 
 ## 🎯 Why You Should Try This Tool
 
-### If you're a beginner security enthusiast:
-This is the cleanest, most readable port scanner you'll find. The code is deliberately written to be *understood*, not just run. No wrappers around Nmap, no external libraries hiding the logic — just raw Python sockets doing exactly what the tool says. Read it, run it, modify it. Understanding this code means understanding the first phase of any real-world attack.
+### If you're a beginner security enthusiast
+This is the cleanest, most readable port scanner + version detector you will find. No wrappers around nmap, no external libraries hiding the logic. Just raw Python sockets and regex doing exactly what the tool claims. Reading this code will cement TCP handshakes, banner grabbing, and service fingerprinting from abstract concepts into something you can explain to anyone — including a CISO.
 
-### If you're studying for a certification (CEH, OSCP, CompTIA Security+):
-Port scanning and reconnaissance are core exam topics. Reading the source code of a working scanner will cement concepts that textbooks describe abstractly — TCP handshakes, service enumeration, banner grabbing — into something tangible and testable.
+### If you're studying for CEH, OSCP, or CompTIA Security+
+Port scanning, service enumeration, and version detection are core exam and lab skills. Understanding the *code* behind these techniques rather than just the tool output puts you in a completely different tier of candidate. OSCP in particular rewards people who know what their tools are doing.
 
-### If you're practicing on HackTheBox, TryHackMe, or VulnHub:
-Use this as a learning tool alongside Nmap. Run both on the same target, compare results, understand why they differ. Knowing your tools at the code level is what separates candidates who pass OSCP from those who don't.
+### If you're practicing on HackTheBox, TryHackMe, or VulnHub
+Run this alongside nmap on every target. Compare outputs. Understand why they differ. Knowing what probe nmap sends to identify MySQL versus what we send here — that's the depth that separates people who pass OSCP from people who don't.
 
-### If you're a developer who wants to understand the attacker's perspective:
-You'll never build secure software until you understand how it gets attacked. This scanner shows exactly how an attacker maps your application's network exposure in seconds. That knowledge belongs in every developer's toolkit.
+### If you're a developer wanting the attacker's perspective
+You will never build secure software until you understand how attackers map your attack surface in seconds. This tool shows exactly that — and the version detection layer shows how much information a misconfigured service leaks just by saying hello.
 
-### If you're building your own security portfolio:
-Fork this repo. Extend it. Add UDP scanning, SYN scanning, OS fingerprinting, or JSON output. Then document what you built. That's a portfolio project with depth — exactly what hiring managers and security leads want to see.
+### If you're building your own security portfolio
+Fork this. Add UDP scanning, OS fingerprinting, JSON output, or CVE lookup integration. Every extension you build and document is a portfolio project with genuine technical depth — exactly what security hiring managers want to see.
 
 ---
 
 ## 📦 Requirements
 
 - **Python 3.8 or higher**
-- No external packages — uses Python standard library only:
+- **No external packages** — uses Python standard library only:
 
 | Module | Purpose |
 |--------|---------|
-| `socket` | TCP connections and DNS resolution |
+| `socket` | TCP connections, DNS resolution, raw UDP |
 | `threading` | Concurrent port scanning |
 | `queue` | Thread-safe port distribution |
-| `datetime` | Scan timing and duration |
-| `sys` | Input handling and exit control |
+| `struct` | Binary protocol packet construction (MySQL, MongoDB, PostgreSQL, SMB) |
+| `re` | Regex-based version string extraction |
+| `datetime` | Scan timing |
+| `sys` | Input handling |
 
-To verify your Python version:
 ```bash
-python3 --version
+# Verify your Python version
+python3 --version   # Must be 3.8+
 ```
 
 ---
@@ -139,291 +146,306 @@ python3 --version
 
 ### Option 1 — Clone the Full Portfolio Repo (Recommended)
 ```bash
-# 1. Clone the repository
+# Clone using HTTPS — works without a GitHub account
 git clone https://github.com/tinny_refugee/security-projects.git
 
-# 2. Navigate to the port scanner project
+# Navigate to the port scanner
 cd security-projects/beginner/01_port_scanner
 
-# 3. Verify Python is installed
-python3 --version
-
-# 4. Run the scanner
+# Run immediately — no pip install needed
 python3 port_scanner_tinny_refugee.py
 ```
 
 ### Option 2 — Download Just This Script
 ```bash
-# Using wget
+# wget
 wget https://raw.githubusercontent.com/tinny_refugee/security-projects/main/beginner/01_port_scanner/port_scanner_tinny_refugee.py
 
-# OR using curl
+# curl
 curl -O https://raw.githubusercontent.com/tinny_refugee/security-projects/main/beginner/01_port_scanner/port_scanner_tinny_refugee.py
 
-# Run it
 python3 port_scanner_tinny_refugee.py
 ```
 
-### Option 3 — Windows Users
-```powershell
-# Ensure Python 3.8+ is installed from https://python.org
-# Open Command Prompt or PowerShell
-
-git clone https://github.com/tinny_refugee/security-projects.git
-cd security-projects\beginner\01_port_scanner
-python port_scanner_tinny_refugee.py
-```
-
-### Kali Linux / Parrot OS (Pre-installed Python)
+### Kali Linux / Parrot OS
 ```bash
-# Python 3 is already available on Kali/Parrot
-# Simply clone and run — no additional setup needed
+# Python 3 ships with Kali — no setup needed
 git clone https://github.com/tinny_refugee/security-projects.git
 cd security-projects/beginner/01_port_scanner
 python3 port_scanner_tinny_refugee.py
 ```
 
-> ✅ **That's it.** No `pip install`. No virtual environments. No configuration files. Python ships with everything this tool needs.
+### Windows
+```powershell
+# Python 3.8+ from https://python.org
+git clone https://github.com/tinny_refugee/security-projects.git
+cd security-projects\beginner\01_port_scanner
+python port_scanner_tinny_refugee.py
+```
+
+> **Troubleshooting git clone asking for credentials:**
+> Public repos should never require a password. If prompted, your git credential helper may have stale data:
+> ```bash
+> git config --global --unset credential.helper
+> git clone https://github.com/tinny_refugee/security-projects.git
+> ```
+> Always use the `https://` URL (not `git@github.com:`) for anonymous cloning.
 
 ---
 
 ## 🚀 Usage
 
-```
+```bash
 python3 port_scanner_tinny_refugee.py
 ```
 
 You will be prompted for:
-
 ```
-  Enter target IP or hostname:  → e.g. 192.168.1.10 or scanme.nmap.org
-  Start port [default 1]:       → Press Enter for default, or enter a number
-  End port   [default 1024]:    → Press Enter for default, or enter a number
-  Threads    [default 100]:     → Press Enter for default (recommended)
+  Enter target IP or hostname :  → e.g. 192.168.1.10 or scanme.nmap.org
+  Start port [default 1]      :  → Press Enter for default
+  End port   [default 1024]   :  → Press Enter for default
+  Threads    [default 100]    :  → Press Enter for recommended default
 ```
 
 ### Common Scan Configurations
 
-| Scenario | Start Port | End Port | Threads | Notes |
-|----------|-----------|----------|---------|-------|
-| Quick top ports scan | 1 | 1024 | 100 | Covers all well-known services |
-| Full port scan | 1 | 65535 | 200 | Takes longer — scan everything |
-| Web services only | 80 | 8443 | 50 | HTTP, HTTPS, alternate ports |
-| Database ports | 3306 | 27017 | 50 | MySQL, PostgreSQL, MongoDB, Redis |
-| Single port check | 22 | 22 | 1 | Verify if SSH is open |
+| Scenario | Start | End | Threads | Notes |
+|----------|-------|-----|---------|-------|
+| Quick standard scan | 1 | 1024 | 100 | All well-known ports |
+| Full port scan | 1 | 65535 | 200 | Everything — takes longer |
+| Web only | 80 | 9443 | 50 | HTTP/HTTPS and common alternates |
+| Database ports | 1433 | 27017 | 30 | All major database ports |
+| Single port verify | 22 | 22 | 1 | Check one specific port |
 
-### Legitimate Test Targets (No Permission Needed)
+### Authorized Test Targets
 
-| Target | Description |
-|--------|-------------|
-| `127.0.0.1` | Your own machine (localhost) |
-| `192.168.x.x` | Your local network devices (your own only) |
-| `scanme.nmap.org` | Nmap's official test server — legal to scan |
-| Metasploitable 2 VM | Local lab VM — see setup below |
+| Target | Notes |
+|--------|-------|
+| `127.0.0.1` | Your own machine |
+| `192.168.x.x` | Your own local network devices |
+| `scanme.nmap.org` | Nmap's official public test server — legal to scan |
+| Metasploitable 2/3 VM | Local lab — perfect test target (see setup below) |
 
 ---
 
 ## 📸 Sample Output
 
 ```
-╔══════════════════════════════════════════════════════════╗
-║          PORT SCANNER WITH BANNER GRABBING               ║
-║          Author: tinny_refugee                           ║
-║          For educational and authorized use ONLY         ║
-╚══════════════════════════════════════════════════════════╝
+╔══════════════════════════════════════════════════════════════╗
+║    PORT SCANNER — SERVICE & VERSION DETECTION  v3.0         ║
+║    Equivalent: nmap -sV target                              ║
+║    Author : tinny_refugee                                   ║
+║    Authorized use ONLY                                      ║
+╚══════════════════════════════════════════════════════════════╝
 
-  Enter target IP or hostname: 192.168.1.10
-  Start port [default 1]:    1
-  End port   [default 1024]: 1024
-  Threads    [default 100]:  100
+  Enter target IP or hostname : 192.168.56.102
+  Start port [default 1]    : 1
+  End port   [default 1024] : 1024
+  Threads    [default 100]  : 100
 
-  [*] Resolving 192.168.1.10...
-  [*] Resolved to: 192.168.1.10
-  [*] Scanning ports 1–1024 with 100 threads...
+  [*] Resolving 192.168.56.102...
+  [*] IP Address   : 192.168.56.102
+  [*] Machine Name : METASPLOITABLE
+  [*] Scanning 1–1024 | Threads: 100 | Mode: SV (version detection)
 
-  [OPEN]  Port 21      FTP         (File Transfer Protocol)
-          ↳ Banner: 220 (vsFTPd 2.3.4)
-  [OPEN]  Port 22      SSH         (Secure Shell)
-          ↳ Banner: SSH-2.0-OpenSSH_4.7p1
-  [OPEN]  Port 23      Telnet      (Unencrypted Remote Access — DANGER)
-  [OPEN]  Port 80      HTTP        (Web — Unencrypted)
-          ↳ Banner: HTTP/1.1 200 OK
-  [OPEN]  Port 445     SMB         (Windows Sharing — EternalBlue target)
-  [OPEN]  Port 3306    MySQL       (Database)
-          ↳ Banner: 5.0.51a-3ubuntu5
+  [OPEN]  Port 21      FTP               vsFTPd 2.3.4
+  [OPEN]  Port 22      SSH               OpenSSH 4.7p1 (protocol 2.0; Debian)
+  [OPEN]  Port 23      Telnet            Telnet
+  [OPEN]  Port 25      SMTP              Postfix smtpd
+  [OPEN]  Port 80      HTTP              Apache httpd 2.2.8 (Ubuntu)
+  [OPEN]  Port 139     NetBIOS-SSN       —
+  [OPEN]  Port 445     SMB               —
+  [OPEN]  Port 3306    MySQL             MySQL 5.0.51a-3ubuntu5
+  [OPEN]  Port 5432    PostgreSQL        PostgreSQL (auth required)
+  [OPEN]  Port 6379    Redis             Redis 2.2.12 (No authentication)
 
-════════════════════════════════════════════════════════════
-  SCAN REPORT — tinny_refugee
-════════════════════════════════════════════════════════════
-  Target   : 192.168.1.10
-  Range    : Port 1 — 1024
-  Duration : 4.73 seconds
-  Open     : 6 port(s) found
-════════════════════════════════════════════════════════════
+════════════════════════════════════════════════════════════════════════════════
+  SCAN REPORT — tinny_refugee v3.0
+════════════════════════════════════════════════════════════════════════════════
+  Target Input  : 192.168.56.102
+  Resolved IP   : 192.168.56.102
+  Machine Name  : METASPLOITABLE
+  Port Range    : 1 — 1024
+  Scan Duration : 6.14 seconds
+  Open Ports    : 10 found
+════════════════════════════════════════════════════════════════════════════════
 
-  OPEN PORTS SUMMARY:
-  PORT     SERVICE                                  BANNER
-  ──────────────────────────────────────────────────────────────────────
-  21       FTP  (File Transfer Protocol)            220 (vsFTPd 2.3.4)
-  22       SSH  (Secure Shell)                      SSH-2.0-OpenSSH_4.7p1
-  23       Telnet (Unencrypted — DANGER)            —
-  80       HTTP (Web — Unencrypted)                 HTTP/1.1 200 OK
-  445      SMB  (EternalBlue target)                —
-  3306     MySQL (Database)                         5.0.51a-3ubuntu5
+  PORT      SERVICE          PRODUCT              VERSION            EXTRA
+  ──────────────────────────────────────────────────────────────────────────────
+  21        FTP              vsFTPd               2.3.4
+  22        SSH              OpenSSH              4.7p1              protocol 2.0; Debian
+  23        Telnet           Telnet               —
+  25        SMTP             Postfix              —                  mail.metasploitable
+  80        HTTP             Apache httpd         2.2.8              Ubuntu
+  139       NetBIOS-SSN      —                    —
+  445       SMB              SMB                  —
+  3306      MySQL            MySQL                5.0.51a-3ubuntu5
+  5432      PostgreSQL       PostgreSQL           —                  auth required
+  6379      Redis            Redis                2.2.12             No authentication…
 
-  ⚠  HIGH-RISK PORTS DETECTED:
-     Port 23:  Telnet transmits credentials in PLAINTEXT
-     Port 445: SMB — EternalBlue / WannaCry vector
+  ────── RISK ASSESSMENT ───────────────────────────────────────────────────────
+  !!! [CRITICAL] Port 445: SMB — EternalBlue MS17-010 / WannaCry ransomware vector
+  ⚠  [HIGH]     Port 21: FTP — credentials often transmitted in plaintext
+  ⚠  [HIGH]     Port 23: Telnet — ALL traffic including passwords is PLAINTEXT
+  ⚠  [HIGH]     Port 3306: MySQL — direct DB access, often weak credentials
+  ⚠  [HIGH]     Port 6379: Redis — frequently deployed with NO authentication
 
-════════════════════════════════════════════════════════════
+════════════════════════════════════════════════════════════════════════════════
   Scan complete. Always act ethically. — tinny_refugee
-════════════════════════════════════════════════════════════
+════════════════════════════════════════════════════════════════════════════════
 ```
 
 ---
 
 ## 🔬 How It Works — Under the Hood
 
-Understanding this section means you can explain the tool to a CISO, in a job interview, or in a write-up.
-
-### Step 1 — DNS Resolution
-Before scanning, the tool resolves the target hostname to an IP address using `socket.gethostbyname()`. This mirrors how every internet connection begins — a domain name must be translated to a routable IP address before packets can be sent.
-
-### Step 2 — Port Queue Population
-All port numbers in the requested range are added to a thread-safe `Queue`. This structure ensures each port is checked exactly once, with no duplication, even across 100 simultaneous threads.
-
-### Step 3 — TCP Connect Scan (The Core)
-Each worker thread pulls a port from the queue and attempts a **TCP three-way handshake**:
+### Phase 1 — TCP Connect Scan
+Each worker thread pulls a port from the shared queue and attempts a **TCP three-way handshake**. `connect_ex()` returns `0` on success — the port is open. This is the same atomic operation at the heart of every port scanner, including nmap.
 
 ```
-Scanner          Target Port
-   │                  │
-   │──── SYN ────────►│   "Hello, are you there?"
-   │                  │
-   │◄─── SYN-ACK ─────│   "Yes, I'm listening"  → PORT OPEN
-   │   OR              │
-   │◄─── RST ─────────│   "Nobody here"          → PORT CLOSED
-   │   OR              │
-   │    (timeout)      │   "No response"          → PORT FILTERED
+Scanner ──SYN──────────► Port
+Scanner ◄──SYN-ACK────── Port   → OPEN
+Scanner ──ACK──────────► Port
+
+OR
+
+Scanner ◄──RST─────────  Port   → CLOSED / FILTERED
 ```
 
-`connect_ex()` returns `0` when the handshake succeeds (port open). Any other return value means closed or filtered.
+### Phase 2 — Service Lookup
+The port number is looked up in a 500+ entry reference table. If not found, `socket.getservbyport()` queries the OS's `/etc/services` database. This two-tier lookup means you will almost never see "Unknown Service".
 
-### Step 4 — Banner Grabbing
-For each open port, a second connection is made and the tool waits to receive the service's greeting message. The raw bytes are decoded and cleaned — only the first line is kept to avoid noise.
+### Phase 3 — Version Detection (The New Layer)
+This is the equivalent of `nmap -sV`. A central `detect_version()` dispatcher routes each open port to its dedicated probe function:
 
-### Step 5 — Risk Flagging
-The list of discovered open ports is checked against a hardcoded dictionary of historically risky or commonly exploited port numbers. Matches trigger warnings with plain-English CVE context.
+```
+detect_version(ip, port, banner)
+       │
+       ├── port 22  ──► probe_ssh()        → parse banner regex
+       ├── port 21  ──► probe_ftp()        → parse banner regex
+       ├── port 80  ──► probe_http()       → HEAD request → Server header
+       ├── port 3306 ─► probe_mysql()      → raw bytes → version string
+       ├── port 6379 ─► probe_redis()      → INFO command → redis_version
+       ├── port 445  ─► probe_smb()        → SMBv1 negotiate → OS strings
+       ├── port 5432 ─► probe_postgresql() → startup packet → auth response
+       └── ... 10 more protocol handlers
+```
 
-### Step 6 — Report Generation
-All results are sorted by port number and formatted into a structured summary report, including timing data and risk flags.
+Each probe returns a structured dict: `{product, version, extra}`.
+
+### Phase 4 — Risk Assessment
+The complete list of open ports is checked against a hardcoded risk table with severity levels (CRITICAL / HIGH / MEDIUM) and plain-English CVE context — the skeleton of a real vulnerability finding.
+
+---
+
+## 🔬 Version Detection Coverage
+
+| Protocol | Port(s) | Probe Method | What We Extract |
+|----------|---------|-------------|-----------------|
+| **SSH** | 22, 2222 | Banner parse | Product, version, OS hint |
+| **FTP** | 21, 990 | Banner regex | Product (vsFTPd/ProFTPD/etc), version |
+| **SMTP** | 25, 587 | Banner + EHLO | MTA product, version, hostname |
+| **HTTP** | 80, 8080+ | HEAD request | Server product (Apache/nginx/IIS), version |
+| **HTTPS** | 443, 8443+ | Noted | TLS noted, sslscan recommended |
+| **POP3** | 110 | Banner regex | MTA product (Dovecot/Courier/etc) |
+| **IMAP** | 143 | Banner regex | MTA product, version |
+| **VNC** | 5900–5903 | Banner parse | RFB protocol version |
+| **MySQL** | 3306 | Raw handshake | MySQL/MariaDB version string |
+| **PostgreSQL** | 5432 | Startup packet | Confirms running, auth type |
+| **Redis** | 6379 | INFO command | Version, OS, mode, auth status |
+| **Memcached** | 11211 | `version` cmd | Version number, auth status |
+| **Elasticsearch** | 9200 | HTTP GET / | Version, Lucene version, cluster name |
+| **SMB** | 445 | Negotiate pkt | Windows version strings |
+| **WinRM** | 5985, 5986 | HTTP GET | Server header, Windows version |
+| **MongoDB** | 27017 | OP_QUERY | Version, auth status |
+| **Telnet** | 23 | Banner regex | Device type (Cisco/MikroTik/Linux) |
 
 ---
 
 ## 🧪 Test Environment Setup
 
-> **Never scan systems you don't own or have written permission to test.**
-> Use a local lab environment for all practice.
+> **Never scan systems you don't own or have explicit written permission to test.**
 
 ### Recommended: Metasploitable 2
 
-Metasploitable 2 is an intentionally vulnerable Linux VM designed specifically for practicing offensive security tools. It's the perfect target for this scanner.
+Metasploitable 2 is an intentionally vulnerable Linux VM with 15+ exploitable services — the ideal target for this scanner.
 
 ```bash
-# Step 1: Download Metasploitable 2
-# https://sourceforge.net/projects/metasploitable/
+# Download: https://sourceforge.net/projects/metasploitable/
+# Import into VirtualBox/VMware on Host-Only network
+# Boot → login: msfadmin/msfadmin → run: ifconfig → note IP
 
-# Step 2: Import into VirtualBox or VMware
-# Set network adapter to "Host-only" to isolate it from the internet
-
-# Step 3: Boot the VM and note its IP address
-# Login: msfadmin / msfadmin
-# Run: ifconfig
-
-# Step 4: Point the scanner at it
 python3 port_scanner_tinny_refugee.py
-# Target: [Metasploitable IP]
-# Range: 1 - 1024
-```
+# Target: [Metasploitable IP]   Range: 1–1024   Threads: 100
 
-Expected result: You'll find 10–15 open ports including FTP, SSH, Telnet, HTTP, SMB, and multiple databases — a rich target for learning.
-
-### Alternative: Scan Your Own Machine
-
-```bash
-# Scan your local machine
-python3 port_scanner_tinny_refugee.py
-# Target: 127.0.0.1
-# Range: 1 - 65535
+# Expected: FTP(21) SSH(22) Telnet(23) SMTP(25) HTTP(80)
+#           MySQL(3306) PostgreSQL(5432) VNC(5900) + more
 ```
 
 ### Alternative: scanme.nmap.org
-
-Nmap maintains a public server specifically authorized for scanning practice:
 ```
-Target: scanme.nmap.org
+Target: scanme.nmap.org  (Nmap's authorized public test server)
 ```
 
 ---
 
 ## 🚨 Risk Port Reference
 
-Ports flagged as high-risk and why:
-
-| Port | Service | Risk |
-|------|---------|------|
-| **23** | Telnet | Transmits all data including passwords in **plaintext** — trivially sniffable |
-| **135** | RPC | Windows Remote Procedure Call — common exploitation vector |
-| **139** | NetBIOS | Legacy Windows file sharing — information leakage, brute-force target |
-| **445** | SMB | EternalBlue (MS17-010) — used by WannaCry ransomware, still widely unpatched |
-| **3389** | RDP | Remote Desktop — BlueKeep (CVE-2019-0708), constant brute-force target |
-| **6379** | Redis | In-memory database — **often deployed with no authentication by default** |
-| **27017** | MongoDB | NoSQL database — **frequently exposed to the internet unauthenticated** |
+| Port | Service | Level | Risk |
+|------|---------|-------|------|
+| 445 | SMB | CRITICAL | EternalBlue MS17-010 — WannaCry ransomware attack vector |
+| 1524 | Backdoor | CRITICAL | Metasploitable root shell — instant root access |
+| 2375 | Docker | CRITICAL | Unauthenticated Docker daemon — full host takeover |
+| 3632 | DistCC | CRITICAL | Unauthenticated remote code execution |
+| 4444 | Meterpreter | CRITICAL | Metasploit listener active |
+| 6200 | Backdoor | CRITICAL | Metasploitable backdoor active |
+| 23 | Telnet | HIGH | All data including passwords sent in plaintext |
+| 3389 | RDP | HIGH | BlueKeep CVE-2019-0708, brute-force magnet |
+| 6379 | Redis | HIGH | No auth by default — database fully exposed |
+| 11211 | Memcached | HIGH | No auth, DDoS amplification vector |
+| 27017 | MongoDB | HIGH | No auth by default — database fully exposed |
+| 9200 | Elasticsearch | HIGH | No auth, full index readable from browser |
 
 ---
 
-## 🗺️ Roadmap
+## 📋 Changelog
 
-Planned upgrades in future versions:
 
-- [ ] **UDP Scanning** — Detect services running over UDP (DNS, SNMP, DHCP)
-- [ ] **SYN (Stealth) Scan** — Half-open scan that doesn't complete the handshake — requires root
-- [ ] **OS Fingerprinting** — Guess the target's operating system from TTL and TCP stack behavior
-- [ ] **JSON / CSV Output** — Export results to file for use in reports
-- [ ] **Top Ports Mode** — One-flag option to scan the 100 most commonly open ports
-- [ ] **Verbose / Silent Modes** — Control how much output is shown during scan
-- [ ] **CIDR Range Support** — Scan an entire subnet (e.g., `192.168.1.0/24`)
+### v2.0
+- Expanded service database to 500+ ports
+- Added `socket.getservbyport()` OS-level fallback
+- Added reverse DNS + NetBIOS hostname resolution
+- Improved banner grabbing for more protocols
+
+### v1.0
+- Initial release: TCP connect scan + basic banner grabbing
+- 20-port service reference table
+- Multi-threaded scanning engine
 
 ---
 
 ## ⚖️ Legal & Ethical Notice
 
-This tool is built for **educational purposes** and **authorized security testing only**.
+This tool is for **educational purposes** and **authorized security testing only**.
 
-Scanning systems, networks, or services **without explicit written permission from the owner is illegal** in most jurisdictions, including:
+Scanning systems without explicit written permission is illegal under:
+- 🇺🇸 Computer Fraud and Abuse Act (CFAA)
+- 🇬🇧 Computer Misuse Act 1990
+- 🇪🇺 EU Directive on Attacks Against Information Systems
+- 🌍 Equivalent legislation in most countries
 
-- 🇺🇸 Computer Fraud and Abuse Act (CFAA) — United States
-- 🇬🇧 Computer Misuse Act 1990 — United Kingdom
-- 🇪🇺 Directive on Attacks Against Information Systems — European Union
-- 🌍 Equivalent legislation exists in most countries worldwide
-
-**Using this tool against systems you do not own or have written authorization to test may result in criminal prosecution.**
-
-The author (`tinny_refugee`) accepts no responsibility for misuse of this tool. Always practice on your own systems or dedicated lab environments.
+**The author (`tinny_refugee`) accepts no responsibility for misuse.**
 
 ---
 
 ## 🤝 Contributing
 
-Contributions, issues, and feature requests are welcome.
+PRs welcome. Please comment your changes — this is a learning resource first.
 
-1. Fork the repository
-2. Create a feature branch: `git checkout -b feature/udp-scanning`
-3. Commit your changes: `git commit -m 'Add UDP scanning support'`
-4. Push to the branch: `git push origin feature/udp-scanning`
-5. Open a Pull Request
-
-Please include comments explaining your changes — this repo is first and foremost a **learning resource**.
+1. Fork → `git checkout -b feature/your-feature`
+2. Commit → `git commit -m 'Add UDP scanning'`
+3. Push → `git push origin feature/your-feature`
+4. Open Pull Request
 
 ---
 
@@ -432,13 +454,10 @@ Please include comments explaining your changes — this repo is first and forem
 <div align="center">
 
 **tinny_refugee**
+*Cybersecurity Analyst | Penetration Tester | Ethical Hacker /*
 
-*Cybersecurity Analyst | Penetration Tester | Ethical Hacker*
-
-*Nairobi, Kenya 🇰🇪*
-
-Building a fully public, documented cybersecurity portfolio from beginner to advanced.
-One project, one write-up, one lesson at a time.
+Building a fully public, documented cybersecurity portfolio — beginner to advanced.
+One project. One write-up. One lesson at a time.
 
 [![Medium](https://img.shields.io/badge/Medium-@tinny__refugee-black?style=for-the-badge&logo=medium)](https://medium.com/@tinny_refugee)
 [![GitHub](https://img.shields.io/badge/GitHub-tinny__refugee-181717?style=for-the-badge&logo=github)](https://github.com/tinny_refugee)
@@ -453,7 +472,7 @@ One project, one write-up, one lesson at a time.
 
 | # | Project | Category | Status |
 |---|---------|----------|--------|
-| **01** | **Port Scanner with Banner Grabbing** | Reconnaissance | ✅ **You are here** |
+| **01** | **Port Scanner — Service & Version Detection** | Reconnaissance | ✅ **You are here** |
 | 02 | Network Packet Sniffer | Traffic Analysis | 🔜 Coming |
 | 03 | Keylogger (Research/Educational) | Malware Analysis | 🔜 Coming |
 | 04 | Password Strength Analyzer + Generator | Credential Security | 🔜 Coming |
@@ -470,6 +489,6 @@ One project, one write-up, one lesson at a time.
 
 *Code signed: **tinny_refugee** — Fork freely. Attribute honestly. Hack ethically.*
 
-*⭐ If this helped you learn something, leave a star. It keeps the project alive.*
+*⭐ If this helped you learn something, drop a star. It keeps the project going.*
 
 </div>
